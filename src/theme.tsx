@@ -13,9 +13,16 @@
 // explicit HC token override layer is a 0.3.0 slice (per the design
 // doc's successive-slices plan).
 
-import { ReactNode, useEffect } from "react";
+import { ReactNode } from "react";
 import { Provider } from "@react-spectrum/s2";
-import spectrumPageCss from "@react-spectrum/s2/page.css";
+// Importing page.css for its side effect — the esbuild CSS-inject
+// plugin (see ../esbuild-css-inject-plugin.mjs) turns each .css
+// import into a runtime <style>-tag injection. Same plumbing
+// handles the per-component CSS that Spectrum 2's distribution
+// auto-imports inside its modules; this top-level import covers
+// the page-scoped custom properties (color-scheme tokens, etc.).
+import "@react-spectrum/s2/page.css";
+import "./termin-spectrum.css";
 import { walkAndRender } from "./walk";
 import type { ComponentNode, PrincipalContext } from "./shell";
 
@@ -25,33 +32,12 @@ export interface AppProps {
   principal: PrincipalContext;
 }
 
-// Inject Spectrum 2's page.css into the document head once. The CSS
-// sets up custom properties Spectrum components depend on. esbuild
-// bundles the CSS as a string via the text loader (see
-// esbuild.config.mjs) so the provider ships as a single .js artifact.
-function ensureSpectrumStylesInjected(): void {
-  if (typeof document === "undefined") return;
-  if (document.querySelector("style[data-termin-spectrum-page-css]")) return;
-  const style = document.createElement("style");
-  style.dataset.terminSpectrumPageCss = "1";
-  style.textContent = spectrumPageCss as unknown as string;
-  document.head.appendChild(style);
-}
-
 export function App({ tree, data, principal }: AppProps): ReactNode {
   const themePreference = principal.preferences?.theme ?? "auto";
   const colorScheme = resolveColorScheme(themePreference);
 
-  // CSS injection runs once per component mount; the helper itself is
-  // idempotent (checks for the marker before appending). Effect so it
-  // runs after the initial render commit, by which point document is
-  // ready.
-  useEffect(() => {
-    ensureSpectrumStylesInjected();
-  }, []);
-
   return (
-    <Provider colorScheme={colorScheme}>
+    <Provider colorScheme={colorScheme} background="base">
       {walkAndRender(tree, data, principal, colorScheme)}
     </Provider>
   );

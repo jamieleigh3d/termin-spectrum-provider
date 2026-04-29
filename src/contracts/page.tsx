@@ -9,6 +9,7 @@
 // scheme.
 
 import { createElement } from "react";
+import { Heading } from "@react-spectrum/s2";
 import { registerLocal, ContractRendererArgs } from "../walk";
 
 export function renderPage(args: ContractRendererArgs) {
@@ -21,13 +22,30 @@ export function renderPage(args: ContractRendererArgs) {
     ((node as unknown as { name?: string }).name) ||
     (node.props?.title as string | undefined) ||
     "";
+  // Wrap content in a <main> with breathing room. Using inline style
+  // (not Spectrum's style() macro — that needs Parcel; see
+  // esbuild-css-inject-plugin.mjs for the build-tool tradeoffs we
+  // accept) is good enough for v0.1.x. The Spectrum Heading picks up
+  // the typography tokens from the Provider above; the rest of the
+  // contract rendering inherits Spectrum's surface colors and font.
   return createElement(
     "main",
-    { "data-termin-contract": "presentation-base.page" },
+    {
+      "data-termin-contract": "presentation-base.page",
+      style: {
+        padding: "24px 32px",
+        minHeight: "100vh",
+        // The Provider sets background="base" which paints the body;
+        // <main> just provides padding and stack layout for content.
+        display: "flex",
+        flexDirection: "column",
+        gap: "16px",
+      },
+    },
     title
       ? createElement(
-          "h1",
-          { "data-termin-page-title": "" },
+          Heading,
+          { level: 1, "data-termin-page-title": "" } as Record<string, unknown>,
           title
         )
       : null,

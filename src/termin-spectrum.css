@@ -1,0 +1,48 @@
+/* Copyright 2026 Jamie-Leigh Blake and Termin project contributors
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ *
+ * Termin-spectrum bundle's own CSS — narrow scope, just what's
+ * needed to make Spectrum 2's components legible at the body level.
+ *
+ * Spectrum 2's Provider correctly paints its inner background to
+ * match colorScheme (light: #fff, dark: #111), but doesn't set
+ * a matching foreground color — components inherit from the body
+ * which keeps the browser default. Result: dark text on the
+ * Provider's dark surface, near-invisible heading.
+ *
+ * The fix: use the modern CSS light-dark() function with
+ * color-scheme: light dark already set by Spectrum's page.css
+ * to pick the foreground value matching the active scheme. Body
+ * background stays transparent; the Provider above paints its
+ * own surface.
+ */
+
+html {
+  /* Spectrum's page.css sets color-scheme: light dark on html;
+   * declare it again here defensively in case loading order
+   * means our rule fires first. */
+  color-scheme: light dark;
+}
+
+body {
+  margin: 0;
+  /* light-dark() picks the first arg in light scheme, second in dark.
+   * Numbers are Spectrum's gray-900/gray-100 approximate equivalents. */
+  color: light-dark(rgb(34, 34, 34), rgb(229, 229, 229));
+  /* Spectrum has its own font tokens but loads them via macros we
+   * don't run; pin to a sane system stack so headings don't fall
+   * back to Times. */
+  font-family:
+    adobe-clean,
+    "Source Sans 3",
+    ui-sans-serif,
+    system-ui,
+    -apple-system,
+    "Segoe UI",
+    Roboto,
+    Helvetica,
+    Arial,
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}

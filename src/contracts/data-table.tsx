@@ -126,7 +126,9 @@ export function renderDataTable(args: ContractRendererArgs): ReactElement {
       TableView,
       {
         "aria-label": `Table of ${props.source}`,
-        density: "compact",
+        // Default density (no compact override). Compact crams cell
+        // text into 32px-tall rows where multi-word values (e.g.
+        // "raw material", "finished good") truncate to "raw m...".
       } as Record<string, unknown>,
       createElement(
         TableHeader,
@@ -134,10 +136,17 @@ export function renderDataTable(args: ContractRendererArgs): ReactElement {
         ((col: ColumnSpec & { __actions?: boolean }) =>
           createElement(
             Column,
-            { id: col.field, isRowHeader: col.field === "id" } as Record<
-              string,
-              unknown
-            >,
+            {
+              id: col.field,
+              isRowHeader: col.field === "id",
+              // Actions column needs room for an ActionButtonGroup
+              // with up to 4 buttons; the rest get a sensible
+              // default that beats Spectrum's auto-width. Apps that
+              // want different sizing can override via deploy
+              // config (a future slice — for v0.1.x widths are
+              // baked in).
+              minWidth: col.__actions ? 320 : 120,
+            } as Record<string, unknown>,
             col.label
           )) as unknown as ReactNode
       ),

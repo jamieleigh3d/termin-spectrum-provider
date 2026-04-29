@@ -6,6 +6,7 @@
 // Spectrum + glue all bundled together. Target ~150KB gzipped.
 
 import * as esbuild from "esbuild";
+import { cssInjectPlugin } from "./esbuild-css-inject-plugin.mjs";
 
 const watch = process.argv.includes("--watch");
 
@@ -21,12 +22,14 @@ const config = {
   loader: {
     ".ts": "ts",
     ".tsx": "tsx",
-    // Spectrum 2 ships a small page.css with the CSS custom properties
-    // its components depend on. Load as text so we can inject it into
-    // the document via a <style> tag at runtime — keeps the bundle a
-    // single artifact, no separate stylesheet route needed.
-    ".css": "text",
   },
+  // CSS imports — Spectrum 2 self-imports per-component stylesheets
+  // (`import "./TableView.css"` etc.). The plugin intercepts each
+  // import and turns it into JS that injects the CSS as a <style>
+  // tag at module-evaluation time. Keeps the provider a single .js
+  // artifact even though the upstream build (Parcel) ships separate
+  // CSS files.
+  plugins: [cssInjectPlugin],
   define: {
     "process.env.NODE_ENV": watch ? '"development"' : '"production"',
   },
