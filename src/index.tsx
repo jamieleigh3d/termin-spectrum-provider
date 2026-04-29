@@ -13,6 +13,11 @@ import { renderPage } from "./contracts/page";
 import { renderText } from "./contracts/text";
 import { renderDataTable } from "./contracts/data-table";
 import { renderForm } from "./contracts/form";
+import { renderMarkdown } from "./contracts/markdown";
+import { renderMetric } from "./contracts/metric";
+import { renderNavBar } from "./contracts/nav-bar";
+import { renderToast } from "./contracts/toast";
+import { renderBanner } from "./contracts/banner";
 import { renderPlaceholder } from "./contracts/placeholder";
 
 // The Termin global shape is set up by termin_runtime/static/termin.js
@@ -53,20 +58,21 @@ function register(): void {
   T.registerRenderer("presentation-base.text", renderText);
   T.registerRenderer("presentation-base.data-table", renderDataTable);
   T.registerRenderer("presentation-base.form", renderForm);
+  T.registerRenderer("presentation-base.markdown", renderMarkdown);
+  T.registerRenderer("presentation-base.metric", renderMetric);
+  T.registerRenderer("presentation-base.nav-bar", renderNavBar);
+  T.registerRenderer("presentation-base.toast", renderToast);
+  T.registerRenderer("presentation-base.banner", renderBanner);
 
-  for (const placeholder of [
-    "presentation-base.markdown",
+  // Only `chat` remains as a placeholder — its streaming integration
+  // is the most complex contract and lands in its own dedicated slice.
+  T.registerRenderer(
     "presentation-base.chat",
-    "presentation-base.metric",
-    "presentation-base.nav-bar",
-    "presentation-base.toast",
-    "presentation-base.banner",
-  ]) {
-    T.registerRenderer(placeholder, renderPlaceholder(placeholder));
-  }
+    renderPlaceholder("presentation-base.chat")
+  );
 
   console.log(
-    "[termin-spectrum] registered renderers (v0.1.x — page + text + data-table + form live)"
+    "[termin-spectrum] registered renderers (v0.1.x — 9/10 presentation-base contracts live; chat remains placeholder)"
   );
 
   // Initial paint. termin.js's `Termin.navigate(...)` drives subsequent
