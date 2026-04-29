@@ -1,0 +1,15 @@
+termin-spectrum-provider
+Copyright 2026 Jamie-Leigh Blake and Termin project contributors
+
+This product includes software developed by the Termin project
+(https://termin.dev).
+
+This product depends on Adobe Spectrum 2 (https://s2.spectrum.adobe.com/),
+which is Copyright Adobe and licensed under the Apache License, Version 2.0.
+This redistribution does not include any modifications to Spectrum source.
+
+This product depends on React Aria (https://react-spectrum.adobe.com/react-aria/),
+which is Copyright Adobe and licensed under the Apache License, Version 2.0.
+
+This product depends on React (https://react.dev), which is Copyright Meta
+Platforms, Inc. and affiliates and licensed under the MIT License.

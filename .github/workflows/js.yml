@@ -1,0 +1,49 @@
+name: JS
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Type-check
+        run: npm run typecheck
+
+      - name: Build bundle
+        run: npm run build
+
+      - name: Run vitest
+        run: npm test
+
+      - name: Bundle-size budget
+        # Q5 target: ~150KB gzipped, soft cap 200KB, hard fail at 250KB.
+        # The labeled-placeholder renderers + minimal v0.1.0 surface
+        # should be well under; the budget tightens as Spectrum
+        # primitives land.
+        run: |
+          BUNDLE=termin_spectrum/static/bundle.js
+          SIZE_BYTES=$(gzip -c "$BUNDLE" | wc -c)
+          SIZE_KB=$((SIZE_BYTES / 1024))
+          echo "Bundle gzipped: ${SIZE_KB}KB"
+          if [ "$SIZE_KB" -gt 250 ]; then
+            echo "ERROR: bundle exceeds hard cap (250KB gzipped)"
+            exit 1
+          fi
+          if [ "$SIZE_KB" -gt 200 ]; then
+            echo "WARNING: bundle exceeds soft cap (200KB gzipped)"
+          fi
