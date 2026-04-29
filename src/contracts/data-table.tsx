@@ -78,13 +78,25 @@ export function renderDataTable(args: ContractRendererArgs): ReactElement {
   const rowActions = props.row_actions || [];
   const hasActions = rowActions.length > 0;
 
-  // The columns list exposed to TableView/TableHeader/Row. We tag the
-  // synthetic actions column with a stable id so renderRow can match
-  // on it without relying on label strings.
-  const tableColumns: Array<ColumnSpec & { __actions?: boolean }> = [
-    ...props.columns,
+  // The columns list exposed to TableView/TableHeader/Row. React Aria's
+  // collection API needs each column entry to expose an `id` field so
+  // it can key columns deterministically — without it, TableView throws
+  // "Could not determine key for item" and the entire React tree
+  // unmounts (white page). The IR uses `field` for the column key; we
+  // mirror it as `id` for React Aria + keep `field` for our own bound-
+  // data lookups in the row render. Synthetic actions column gets the
+  // stable ACTIONS_COLUMN_ID.
+  const tableColumns: Array<
+    ColumnSpec & { id: string; __actions?: boolean }
+  > = [
+    ...props.columns.map((c) => ({ ...c, id: c.field })),
     ...(hasActions
-      ? [{ field: ACTIONS_COLUMN_ID, label: "Actions", __actions: true }]
+      ? [{
+          field: ACTIONS_COLUMN_ID,
+          id: ACTIONS_COLUMN_ID,
+          label: "Actions",
+          __actions: true as const,
+        }]
       : []),
   ];
 

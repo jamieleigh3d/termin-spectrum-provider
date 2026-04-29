@@ -23,9 +23,34 @@ export function walkAndRender(
 
 function renderNode(node: ComponentNode, ctx: RenderContext): ReactNode {
   if (!node) return null;
-  const contract = node.contract ?? `presentation-base.${node.type ?? ""}`;
+  // Derive the contract: prefer node.contract when truthy (the IR's
+  // explicit `presentation-base.<name>` form), otherwise fall through
+  // to `presentation-base.<node.type>` from the legacy node.type field.
+  // The IR's modifier children (filter, search, subscribe, related,
+  // edit_modal, action_button, field_input) carry contract="" — they
+  // collapse into their parent's renderer per BRD #2 §4.2 and should
+  // not be walked as standalone. Treat unknown contracts as benign:
+  // skip silently (no warning) when the contract is one of those
+  // known modifier types, render an "unknown" placeholder otherwise
+  // so misrenders are visible without taking down the React tree.
+  const explicitContract =
+    typeof node.contract === "string" && node.contract.length > 0
+      ? node.contract
+      : null;
+  const contract =
+    explicitContract ?? `presentation-base.${node.type ?? ""}`;
   const renderer = lookupRenderer(contract);
   if (!renderer) {
+    if (_KNOWN_MODIFIER_TYPES.has(node.type ?? "")) {
+      // Modifier appearing at a non-modifier site — silently skip.
+      // The lowerer is supposed to nest these under their parent's
+      // children list; the parent renderer consumes them as it sees
+      // fit. If a modifier slips through to here it means either the
+      // parent doesn't yet handle it (e.g., data-table doesn't render
+      // filters in v0.1.x) or the lowerer placed it incorrectly.
+      // Either way, rendering nothing is better than crashing.
+      return null;
+    }
     console.warn(`[termin-spectrum] no renderer for contract: ${contract}`);
     return createElement(
       "div",
@@ -33,9 +58,6 @@ function renderNode(node: ComponentNode, ctx: RenderContext): ReactNode {
       `[unknown contract: ${contract}]`
     );
   }
-  // The per-contract renderer receives the node, the bound data, the
-  // principal context, and a recursive `renderChildren` thunk so it
-  // can compose its own children.
   return renderer({
     node,
     data: ctx.data,
@@ -44,6 +66,23 @@ function renderNode(node: ComponentNode, ctx: RenderContext): ReactNode {
     renderChildren: () => renderChildren(node, ctx),
   });
 }
+
+// Modifier component types — these collapse into their parent's
+// renderer (BRD #2 §4.2). When the walker encounters one as a node
+// it tries to render directly, that's a structural site we don't
+// support yet. Skip silently rather than warning every render.
+const _KNOWN_MODIFIER_TYPES = new Set([
+  "filter",
+  "search",
+  "subscribe",
+  "highlight",
+  "related",
+  "action_button",
+  "field_input",
+  "edit_modal",
+  "section",
+  "semantic_mark",
+]);
 
 function renderChildren(node: ComponentNode, ctx: RenderContext): ReactNode {
   if (!node.children || node.children.length === 0) return null;
