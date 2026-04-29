@@ -74,7 +74,7 @@ interface FieldNode {
 export function renderForm(args: ContractRendererArgs): ReactElement {
   const { node, data } = args;
   const props = (node.props as unknown as FormProps) || { target: "" };
-  const fields = ((node.children || []) as Array<{
+  const fields = ((node.children || []) as unknown as Array<{
     type: string;
     props: FieldInputProps;
   }>).filter((c) => c && c.type === "field_input");
@@ -163,10 +163,7 @@ function SpectrumForm({
     },
     createElement(
       Form,
-      { onSubmit: handleSubmit, validationBehavior: "native" } as Record<
-        string,
-        unknown
-      >,
+      { onSubmit: handleSubmit, validationBehavior: "native" } as any,
       ...fields.map((f) => renderField(f, values, boundData, handleChange)),
       errorMessage
         ? createElement(
@@ -184,14 +181,14 @@ function SpectrumForm({
         : null,
       createElement(
         ButtonGroup,
-        { key: "__actions__" } as Record<string, unknown>,
+        { key: "__actions__" } as any,
         createElement(
           Button,
           {
             type: "submit",
             variant: "accent",
             isPending: submitting,
-          } as Record<string, unknown>,
+          } as any,
           "Save"
         )
       )
@@ -218,7 +215,7 @@ function renderField(
         value: (value as string) ?? "",
         isRequired: props.required ?? false,
         onChange: (v: string) => onChange(props.field, v),
-      } as Record<string, unknown>);
+      } as any);
 
     case "number":
     case "currency":
@@ -235,7 +232,7 @@ function renderField(
             ? { style: "currency", currency: "USD" }
             : undefined,
         onChange: (v: number) => onChange(props.field, v),
-      } as Record<string, unknown>);
+      } as any);
 
     case "enum": {
       const options = props.enum_values || [];
@@ -249,9 +246,9 @@ function renderField(
           isRequired: props.required ?? false,
           onSelectionChange: (k: React.Key) =>
             onChange(props.field, String(k)),
-        } as Record<string, unknown>,
+        } as any,
         ...options.map((opt) =>
-          createElement(PickerItem, { key: opt, id: opt }, opt)
+          createElement(PickerItem, { key: opt, id: opt, children: opt } as any)
         )
       );
     }
@@ -268,9 +265,9 @@ function renderField(
           isRequired: props.required ?? false,
           onSelectionChange: (k: React.Key) =>
             onChange(props.field, String(k)),
-        } as Record<string, unknown>,
+        } as any,
         ...states.map((s) =>
-          createElement(PickerItem, { key: s, id: s }, s)
+          createElement(PickerItem, { key: s, id: s, children: s } as any)
         )
       );
     }
@@ -295,12 +292,15 @@ function renderField(
           isRequired: props.required ?? false,
           onSelectionChange: (k: React.Key) =>
             onChange(props.field, String(k)),
-        } as Record<string, unknown>,
+        } as any,
         ...records.map((rec) =>
           createElement(
             PickerItem,
-            { key: String(rec.id), id: String(rec.id) },
-            String((rec as Record<string, unknown>)[displayCol] ?? rec.id)
+            {
+              key: String(rec.id),
+              id: String(rec.id),
+              children: String((rec as any)[displayCol] ?? rec.id),
+            } as any
           )
         )
       );
@@ -319,7 +319,7 @@ function renderField(
         value: (value as string) ?? "",
         isRequired: props.required ?? false,
         onChange: (v: string) => onChange(props.field, v),
-      } as Record<string, unknown>);
+      } as any);
   }
 }
 

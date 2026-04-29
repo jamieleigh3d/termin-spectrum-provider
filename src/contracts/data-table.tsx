@@ -129,10 +129,10 @@ export function renderDataTable(args: ContractRendererArgs): ReactElement {
         // Default density (no compact override). Compact crams cell
         // text into 32px-tall rows where multi-word values (e.g.
         // "raw material", "finished good") truncate to "raw m...".
-      } as Record<string, unknown>,
+      } as any,
       createElement(
         TableHeader,
-        { columns: tableColumns } as Record<string, unknown>,
+        { columns: tableColumns } as any,
         ((col: ColumnSpec & { __actions?: boolean }) =>
           createElement(
             Column,
@@ -146,27 +146,24 @@ export function renderDataTable(args: ContractRendererArgs): ReactElement {
               // config (a future slice — for v0.1.x widths are
               // baked in).
               minWidth: col.__actions ? 320 : 120,
-            } as Record<string, unknown>,
+            } as any,
             col.label
           )) as unknown as ReactNode
       ),
       createElement(
         TableBody,
-        { items: records as Iterable<Record<string, unknown>> } as Record<
-          string,
-          unknown
-        >,
+        { items: records as Iterable<Record<string, unknown>> } as any,
         ((row: Record<string, unknown>) =>
           createElement(
             Row,
             {
               id: rowKey(row),
               columns: tableColumns,
-            } as Record<string, unknown>,
+            } as any,
             ((col: ColumnSpec & { __actions?: boolean }) =>
               createElement(
                 Cell,
-                {} as Record<string, unknown>,
+                {} as any,
                 col.__actions
                   ? renderRowActions(props.source, row, rowActions)
                   : renderCellValue(row[col.field])
@@ -238,7 +235,7 @@ function renderRowActions(
     {
       density: "compact",
       "aria-label": "Row actions",
-    } as Record<string, unknown>,
+    } as any,
     ...visibleActions.map((spec, idx) =>
       renderOneAction(source, row, spec, idx)
     )
@@ -312,7 +309,7 @@ function renderOneAction(
       onPress,
       "data-termin-action": props.action,
       "data-termin-action-label": props.label,
-    } as Record<string, unknown>,
+    } as any,
     props.label
   );
 }

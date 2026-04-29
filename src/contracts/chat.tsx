@@ -78,7 +78,7 @@ export function renderChat(args: ContractRendererArgs): ReactElement {
 
   const initialRecords = lookupRecords(data, props.source);
   const initialMessages: Message[] = initialRecords.map((rec) => {
-    const r = rec as Record<string, unknown>;
+    const r = rec as any;
     return {
       id: r.id as string | number,
       role: String(r[roleField] ?? "user"),
@@ -134,7 +134,7 @@ function SpectrumChat({
       const action = parts[2];
       if (action !== "created") return;
       if (!rawData || typeof rawData !== "object") return;
-      const payload = rawData as Record<string, unknown>;
+      const payload = rawData as any;
       const newMsg: Message = {
         id: payload.id as string | number,
         role: String(payload[roleField] ?? "user"),
@@ -170,7 +170,7 @@ function SpectrumChat({
   useEffect(() => {
     const unsub = subscribe("compute.stream", (rawData) => {
       if (!rawData || typeof rawData !== "object") return;
-      const payload = rawData as Record<string, unknown>;
+      const payload = rawData as any;
       if (payload.error) {
         setErrorMessage(`Stream error: ${String(payload.error)}`);
         return;
@@ -351,7 +351,7 @@ function SpectrumChat({
             }
           },
           isDisabled: sending,
-        } as Record<string, unknown>)
+        } as any)
       ),
       createElement(
         Button,
@@ -363,7 +363,7 @@ function SpectrumChat({
           onPress: () => {
             void handleSend();
           },
-        } as Record<string, unknown>,
+        } as any,
         "Send"
       )
     )

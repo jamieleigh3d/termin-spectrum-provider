@@ -45,7 +45,7 @@ export function renderPage(args: ContractRendererArgs) {
     title
       ? createElement(
           Heading,
-          { level: 1, "data-termin-page-title": "" } as Record<string, unknown>,
+          { level: 1, "data-termin-page-title": "" } as any,
           title
         )
       : null,

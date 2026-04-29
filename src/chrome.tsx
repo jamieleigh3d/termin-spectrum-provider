@@ -97,13 +97,13 @@ export function PageChrome({ chrome, children }: ChromeProps): ReactElement {
             window.location.href = `/${item.page_slug}`;
           }
         },
-      } as Record<string, unknown>,
+      } as any,
       item.label
     )
   );
 
   const roleOptions = chrome.available_roles.map((r) =>
-    createElement(PickerItem, { key: r, id: r }, r)
+    createElement(PickerItem, { key: r, id: r, children: r } as any)
   );
 
   return createElement(
@@ -150,7 +150,7 @@ export function PageChrome({ chrome, children }: ChromeProps): ReactElement {
               key: "__nav__",
               "aria-label": "Navigation",
               density: "compact",
-            } as Record<string, unknown>,
+            } as any,
             ...navItems
           )
         : null,
@@ -175,7 +175,7 @@ export function PageChrome({ chrome, children }: ChromeProps): ReactElement {
             onSelectionChange: handleRoleChange,
             // Compact size so the picker doesn't dominate the header.
             size: "S",
-          } as Record<string, unknown>,
+          } as any,
           ...roleOptions
         )
       ),
@@ -193,7 +193,7 @@ export function PageChrome({ chrome, children }: ChromeProps): ReactElement {
               onChange: (v: string) => setUserName(v),
               onBlur: handleNameBlur,
               size: "S",
-            } as Record<string, unknown>)
+            } as any)
           )
         : null
     ),

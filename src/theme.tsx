@@ -43,8 +43,14 @@ export function App({ tree, data, principal, chrome }: AppProps): ReactNode {
   // Picker / ActionButton inherit the same color-scheme tokens as
   // the page body. Bootstrap payloads from older runtime versions
   // may omit `chrome` — fall back to bare page content in that case.
+  // children passed in the props object so the strict ChromeProps
+  // interface (which requires `children: ReactNode`) is satisfied.
+  // The third positional arg of createElement also becomes children
+  // at runtime, but TS doesn't narrow that path through generic
+  // component types — including children directly is the call-site
+  // shape the type system can check.
   const body = chrome
-    ? createElement(PageChrome, { chrome }, pageContent)
+    ? createElement(PageChrome, { chrome, children: pageContent })
     : pageContent;
 
   return (
