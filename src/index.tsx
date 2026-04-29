@@ -12,6 +12,7 @@ import { renderShell } from "./shell";
 import { renderPage } from "./contracts/page";
 import { renderText } from "./contracts/text";
 import { renderDataTable } from "./contracts/data-table";
+import { renderForm } from "./contracts/form";
 import { renderPlaceholder } from "./contracts/placeholder";
 
 // The Termin global shape is set up by termin_runtime/static/termin.js
@@ -51,10 +52,10 @@ function register(): void {
   T.registerRenderer("presentation-base.page", renderPage);
   T.registerRenderer("presentation-base.text", renderText);
   T.registerRenderer("presentation-base.data-table", renderDataTable);
+  T.registerRenderer("presentation-base.form", renderForm);
 
   for (const placeholder of [
     "presentation-base.markdown",
-    "presentation-base.form",
     "presentation-base.chat",
     "presentation-base.metric",
     "presentation-base.nav-bar",
@@ -65,7 +66,7 @@ function register(): void {
   }
 
   console.log(
-    "[termin-spectrum] registered renderers (v0.1.x — page + text + data-table live)"
+    "[termin-spectrum] registered renderers (v0.1.x — page + text + data-table + form live)"
   );
 
   // Initial paint. termin.js's `Termin.navigate(...)` drives subsequent
