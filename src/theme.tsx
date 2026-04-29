@@ -13,8 +13,9 @@
 // explicit HC token override layer is a 0.3.0 slice (per the design
 // doc's successive-slices plan).
 
-import { ReactNode } from "react";
+import { ReactNode, createElement } from "react";
 import { Provider } from "@react-spectrum/s2";
+import { PageChrome, type AppChrome } from "./chrome";
 // Importing page.css for its side effect — the esbuild CSS-inject
 // plugin (see ../esbuild-css-inject-plugin.mjs) turns each .css
 // import into a runtime <style>-tag injection. Same plumbing
@@ -30,15 +31,25 @@ export interface AppProps {
   tree: ComponentNode;
   data: Record<string, unknown>;
   principal: PrincipalContext;
+  chrome?: AppChrome;
 }
 
-export function App({ tree, data, principal }: AppProps): ReactNode {
+export function App({ tree, data, principal, chrome }: AppProps): ReactNode {
   const themePreference = principal.preferences?.theme ?? "auto";
   const colorScheme = resolveColorScheme(themePreference);
 
+  const pageContent = walkAndRender(tree, data, principal, colorScheme);
+  // The chrome lives inside the Spectrum Provider so its TextField /
+  // Picker / ActionButton inherit the same color-scheme tokens as
+  // the page body. Bootstrap payloads from older runtime versions
+  // may omit `chrome` — fall back to bare page content in that case.
+  const body = chrome
+    ? createElement(PageChrome, { chrome }, pageContent)
+    : pageContent;
+
   return (
     <Provider colorScheme={colorScheme} background="base">
-      {walkAndRender(tree, data, principal, colorScheme)}
+      {body}
     </Provider>
   );
 }

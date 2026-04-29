@@ -12,11 +12,14 @@ import { App } from "./theme";
 // same root so React reconciles instead of remounting.
 let _root: Root | null = null;
 
+import type { AppChrome } from "./chrome";
+
 export interface BootstrapPayload {
   component_tree_ir: ComponentNode;
   bound_data: Record<string, unknown>;
   principal_context: PrincipalContext;
   subscriptions_to_open: string[];
+  app_chrome?: AppChrome;
 }
 
 export interface ComponentNode {
@@ -40,7 +43,8 @@ export function renderShell(
   componentTreeIr: ComponentNode,
   boundData: Record<string, unknown>,
   principalContext: PrincipalContext,
-  subscriptionsToOpen: string[]
+  subscriptionsToOpen: string[],
+  appChrome?: AppChrome
 ): void {
   const container = document.getElementById("termin-root");
   if (!container) {
@@ -76,6 +80,7 @@ export function renderShell(
       tree: normalizedTree,
       data: boundData,
       principal: principalContext,
+      chrome: appChrome,
     })
   );
 }

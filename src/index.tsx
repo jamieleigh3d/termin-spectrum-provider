@@ -85,6 +85,7 @@ function register(): void {
       bound_data?: Record<string, unknown>;
       principal_context?: Record<string, unknown>;
       subscriptions_to_open?: string[];
+      app_chrome?: unknown;
     };
   }).__termin_bootstrap;
   if (bootstrap && bootstrap.component_tree_ir) {
@@ -92,7 +93,8 @@ function register(): void {
       bootstrap.component_tree_ir as Parameters<typeof renderShell>[0],
       bootstrap.bound_data || {},
       (bootstrap.principal_context || {}) as Parameters<typeof renderShell>[2],
-      bootstrap.subscriptions_to_open || []
+      bootstrap.subscriptions_to_open || [],
+      bootstrap.app_chrome as Parameters<typeof renderShell>[4]
     );
   } else {
     console.log(
