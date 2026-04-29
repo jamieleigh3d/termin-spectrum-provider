@@ -18,7 +18,11 @@ import { renderMetric } from "./contracts/metric";
 import { renderNavBar } from "./contracts/nav-bar";
 import { renderToast } from "./contracts/toast";
 import { renderBanner } from "./contracts/banner";
-import { renderPlaceholder } from "./contracts/placeholder";
+import { renderChat } from "./contracts/chat";
+// renderPlaceholder is no longer needed — every presentation-base
+// contract has a real renderer as of this slice. Keep the import out
+// to avoid a dead-code warning; if a future contract is added that
+// isn't ready, re-import here.
 
 // The Termin global shape is set up by termin_runtime/static/termin.js
 // long before this bundle loads. We assume it exists; if it doesn't
@@ -63,16 +67,10 @@ function register(): void {
   T.registerRenderer("presentation-base.nav-bar", renderNavBar);
   T.registerRenderer("presentation-base.toast", renderToast);
   T.registerRenderer("presentation-base.banner", renderBanner);
-
-  // Only `chat` remains as a placeholder — its streaming integration
-  // is the most complex contract and lands in its own dedicated slice.
-  T.registerRenderer(
-    "presentation-base.chat",
-    renderPlaceholder("presentation-base.chat")
-  );
+  T.registerRenderer("presentation-base.chat", renderChat);
 
   console.log(
-    "[termin-spectrum] registered renderers (v0.1.x — 9/10 presentation-base contracts live; chat remains placeholder)"
+    "[termin-spectrum] registered renderers (10/10 presentation-base contracts live)"
   );
 
   // Initial paint. termin.js's `Termin.navigate(...)` drives subsequent
