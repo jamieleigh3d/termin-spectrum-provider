@@ -207,6 +207,30 @@ function renderRowActions(
   row: Record<string, unknown>,
   actions: RowActionSpec[]
 ): ReactNode {
+  // v0.9 Phase 5b.4 0.2: the runtime pre-evaluates per-row visibility
+  // and attaches `__visible_actions` to each row in bound_data. We
+  // filter by that label list before rendering — only authorized
+  // actions ever paint. The bundle is no longer the trust boundary;
+  // it's pure presentation. (When `__visible_actions` is undefined
+  // — older runtime / contract package contexts — fall back to
+  // showing every action, matching the v0.1.x behavior.)
+  const allowed = row["__visible_actions"];
+  const visibleActions = Array.isArray(allowed)
+    ? actions.filter((a) =>
+        (allowed as unknown[]).includes(a.props.label)
+      )
+    : actions;
+
+  if (visibleActions.length === 0) {
+    // No actions for this row → render an empty placeholder so the
+    // Cell still has content (some Spectrum versions warn on null
+    // children) and the column width stays consistent across rows.
+    return createElement("span", {
+      "data-termin-row-no-actions": "",
+      style: { color: "var(--spectrum-gray-600, #999)" },
+    }, "");
+  }
+
   // ActionButtonGroup gives the buttons consistent spacing + keyboard
   // navigation; Spectrum handles the rest.
   return createElement(
@@ -215,7 +239,7 @@ function renderRowActions(
       density: "compact",
       "aria-label": "Row actions",
     } as Record<string, unknown>,
-    ...actions.map((spec, idx) =>
+    ...visibleActions.map((spec, idx) =>
       renderOneAction(source, row, spec, idx)
     )
   );
