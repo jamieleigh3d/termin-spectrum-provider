@@ -11,6 +11,7 @@
 import { renderShell } from "./shell";
 import { renderPage } from "./contracts/page";
 import { renderText } from "./contracts/text";
+import { renderDataTable } from "./contracts/data-table";
 import { renderPlaceholder } from "./contracts/placeholder";
 
 // The Termin global shape is set up by termin_runtime/static/termin.js
@@ -42,16 +43,17 @@ function register(): void {
   // on first render and on every Termin.navigate() call.
   T.registerRenderer("__app_shell__", renderShell);
 
-  // Per-contract renderers — v0.1.0 ships `page` and `text` for real;
-  // the remaining eight `presentation-base` contracts get a labeled
-  // placeholder that renders "<contract> (unimplemented)" so any
-  // example using them runs without crashing while we fill them in.
+  // Per-contract renderers — v0.1.x ships `page`, `text`, and
+  // `data-table` for real; the remaining seven `presentation-base`
+  // contracts get a labeled placeholder that renders "<contract>
+  // (unimplemented)" so any example using them runs without crashing
+  // while we fill them in.
   T.registerRenderer("presentation-base.page", renderPage);
   T.registerRenderer("presentation-base.text", renderText);
+  T.registerRenderer("presentation-base.data-table", renderDataTable);
 
   for (const placeholder of [
     "presentation-base.markdown",
-    "presentation-base.data-table",
     "presentation-base.form",
     "presentation-base.chat",
     "presentation-base.metric",
@@ -63,7 +65,7 @@ function register(): void {
   }
 
   console.log(
-    "[termin-spectrum] registered renderers (v0.1.0 — page + text live)"
+    "[termin-spectrum] registered renderers (v0.1.x — page + text + data-table live)"
   );
 
   // Initial paint. termin.js's `Termin.navigate(...)` drives subsequent

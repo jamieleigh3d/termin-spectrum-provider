@@ -13,7 +13,9 @@
 // explicit HC token override layer is a 0.3.0 slice (per the design
 // doc's successive-slices plan).
 
-import { ReactNode } from "react";
+import { ReactNode, useEffect } from "react";
+import { Provider } from "@react-spectrum/s2";
+import spectrumPageCss from "@react-spectrum/s2/page.css";
 import { walkAndRender } from "./walk";
 import type { ComponentNode, PrincipalContext } from "./shell";
 
@@ -23,17 +25,36 @@ export interface AppProps {
   principal: PrincipalContext;
 }
 
+// Inject Spectrum 2's page.css into the document head once. The CSS
+// sets up custom properties Spectrum components depend on. esbuild
+// bundles the CSS as a string via the text loader (see
+// esbuild.config.mjs) so the provider ships as a single .js artifact.
+function ensureSpectrumStylesInjected(): void {
+  if (typeof document === "undefined") return;
+  if (document.querySelector("style[data-termin-spectrum-page-css]")) return;
+  const style = document.createElement("style");
+  style.dataset.terminSpectrumPageCss = "1";
+  style.textContent = spectrumPageCss as unknown as string;
+  document.head.appendChild(style);
+}
+
 export function App({ tree, data, principal }: AppProps): ReactNode {
   const themePreference = principal.preferences?.theme ?? "auto";
   const colorScheme = resolveColorScheme(themePreference);
 
-  // v0.1.0: render the tree without a Spectrum <Provider> wrapper while
-  // the shell + page + text renderers are still establishing the basic
-  // pattern. Once the first Spectrum-using contract (data-table or
-  // form) lands, this gets wrapped in <Provider theme={...}> with the
-  // resolved color scheme. Until then the wrapper would be a no-op
-  // theme application against zero Spectrum components.
-  return walkAndRender(tree, data, principal, colorScheme);
+  // CSS injection runs once per component mount; the helper itself is
+  // idempotent (checks for the marker before appending). Effect so it
+  // runs after the initial render commit, by which point document is
+  // ready.
+  useEffect(() => {
+    ensureSpectrumStylesInjected();
+  }, []);
+
+  return (
+    <Provider colorScheme={colorScheme}>
+      {walkAndRender(tree, data, principal, colorScheme)}
+    </Provider>
+  );
 }
 
 function resolveColorScheme(pref: string): "light" | "dark" {

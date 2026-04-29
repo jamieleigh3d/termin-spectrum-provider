@@ -18,7 +18,15 @@ const config = {
   minify: !watch,
   sourcemap: watch,
   jsx: "automatic",
-  loader: { ".ts": "ts", ".tsx": "tsx" },
+  loader: {
+    ".ts": "ts",
+    ".tsx": "tsx",
+    // Spectrum 2 ships a small page.css with the CSS custom properties
+    // its components depend on. Load as text so we can inject it into
+    // the document via a <style> tag at runtime — keeps the bundle a
+    // single artifact, no separate stylesheet route needed.
+    ".css": "text",
+  },
   define: {
     "process.env.NODE_ENV": watch ? '"development"' : '"production"',
   },
