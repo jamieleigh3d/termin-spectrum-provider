@@ -17,6 +17,10 @@ Public surface:
     SpectrumProvider — the provider class.
     spectrum_factory — the factory function the runtime calls at deploy
         time; constructs a `SpectrumProvider` with the resolved config.
+    register_spectrum — registers the provider against all ten
+        `presentation-base.<contract>` names. Auto-invoked by the
+        Termin runtime via the `termin.providers` entry-point group;
+        callers don't normally need to call it directly.
 
 See the project README for deploy-config wiring and the spectrum-provider
 design doc in termin-compiler/docs/ for the architectural decisions.
@@ -24,7 +28,13 @@ design doc in termin-compiler/docs/ for the architectural decisions.
 
 from termin_spectrum.provider import SpectrumProvider
 from termin_spectrum.factory import spectrum_factory
+from termin_spectrum.registration import register_spectrum
 
 __version__ = "0.1.0.dev0"
 
-__all__ = ["SpectrumProvider", "spectrum_factory", "__version__"]
+__all__ = [
+    "SpectrumProvider",
+    "spectrum_factory",
+    "register_spectrum",
+    "__version__",
+]

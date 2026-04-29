@@ -13,7 +13,14 @@ import { registerLocal, ContractRendererArgs } from "../walk";
 
 export function renderPage(args: ContractRendererArgs) {
   const { node, renderChildren } = args;
-  const title = (node.props?.title as string | undefined) ?? "";
+  // The IR's PageEntry stores the visible title in `name` (the
+  // `As <role>, I want to see a page "<name>"` source verb), with
+  // `slug` as the URL form. Some contract-package pages may use
+  // `props.title` instead — fall back to that.
+  const title =
+    ((node as unknown as { name?: string }).name) ||
+    (node.props?.title as string | undefined) ||
+    "";
   return createElement(
     "main",
     { "data-termin-contract": "presentation-base.page" },

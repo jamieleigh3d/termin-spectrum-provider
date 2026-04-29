@@ -62,9 +62,18 @@ export function renderShell(
     });
   }
 
+  // Normalize the root: the IR's PageEntry (the top-level node) has
+  // `name` / `slug` / `children` but no `contract` or `type` field.
+  // Tag it so the walker dispatches to the page renderer.
+  const normalizedTree: ComponentNode = {
+    ...componentTreeIr,
+    contract: componentTreeIr.contract || "presentation-base.page",
+    type: componentTreeIr.type || "page",
+  };
+
   _root.render(
     createElement(App, {
-      tree: componentTreeIr,
+      tree: normalizedTree,
       data: boundData,
       principal: principalContext,
     })

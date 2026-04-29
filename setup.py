@@ -41,6 +41,16 @@ setup(
             "pytest-asyncio>=0.21",
         ],
     },
+    entry_points={
+        # Termin runtime auto-discovers presentation providers via this
+        # entry-point group at app startup. The value is a callable
+        # `register_<product>(provider_registry, contract_registry)`
+        # that registers the provider against its declared contracts.
+        # See BRD §10 (one loading path for all providers).
+        "termin.providers": [
+            "spectrum = termin_spectrum:register_spectrum",
+        ],
+    },
     classifiers=[
         "Development Status :: 3 - Alpha",
         "Intended Audience :: Developers",

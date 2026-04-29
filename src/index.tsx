@@ -65,6 +65,33 @@ function register(): void {
   console.log(
     "[termin-spectrum] registered renderers (v0.1.0 — page + text live)"
   );
+
+  // Initial paint. termin.js's `Termin.navigate(...)` drives subsequent
+  // page transitions, but the first render needs a kick — the bootstrap
+  // JSON island is in `window.__termin_bootstrap`, embedded by the
+  // server's shell endpoint. Read it once, render once. If a future
+  // version of termin.js takes over the initial-render trigger, this
+  // can be removed; for v0.1.0 the bundle owns it.
+  const bootstrap = (window as unknown as {
+    __termin_bootstrap?: {
+      component_tree_ir?: unknown;
+      bound_data?: Record<string, unknown>;
+      principal_context?: Record<string, unknown>;
+      subscriptions_to_open?: string[];
+    };
+  }).__termin_bootstrap;
+  if (bootstrap && bootstrap.component_tree_ir) {
+    renderShell(
+      bootstrap.component_tree_ir as Parameters<typeof renderShell>[0],
+      bootstrap.bound_data || {},
+      (bootstrap.principal_context || {}) as Parameters<typeof renderShell>[2],
+      bootstrap.subscriptions_to_open || []
+    );
+  } else {
+    console.log(
+      "[termin-spectrum] no __termin_bootstrap found; awaiting Termin.navigate()"
+    );
+  }
 }
 
 register();
