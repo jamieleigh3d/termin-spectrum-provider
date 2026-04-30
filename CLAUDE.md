@@ -2,6 +2,38 @@
 
 This file is for Claude Code sessions working in this repository. Universal norms (who JL is, git discipline, environment quirks) live in `~/.claude/CLAUDE.md` and load automatically. Termin-family working style (TDD, three test levels, PEG authority) lives in `E:\ClaudeWorkspace\CLAUDE.md`. This file holds the repo-specific context only.
 
+## Public-Repo Codename Discipline (NON-NEGOTIABLE)
+
+**This repository is public.** Anything written here ships publicly
+the moment the next push goes out.
+
+- **Never write internal employer/vendor codenames** in this tree.
+  Not in `*.tsx` / `*.py` source code comments, not in markdown
+  (README, design notes, CHANGELOG), not in commit messages, not in
+  PR descriptions, not in test fixtures, not in bundle build configs.
+  The bar is "recognizable only to someone with the corresponding
+  employer/vendor context → omit or genericize."
+- **Genericize.** "an AWS-native Termin runtime" when AWS context
+  matters (enterprise, regulated, air-gapped). "an alternate Termin
+  runtime" when the context is just "a second runtime exists." "a
+  third-party Rust port" when the language matters.
+- **No checked-in list of prohibited names.** A list of
+  names-to-not-write would itself be a list of names. Discipline lives
+  in private workspace context (`E:\ClaudeWorkspace\CLAUDE.md` and
+  the journal), not in any file in this tree. When unsure: **omit
+  and ask**.
+- **Verify before every push** by reading your own diff critically.
+  Pattern `<descriptor> (<internal name>, <context>)` in parentheses
+  is the typical slip. Searching the diff for the word "internal" is
+  a quick smell test.
+- **History remediation** is a separate v1.0 public-launch operation;
+  the discipline here is about *current state*. Every push starts
+  clean.
+
+Added 2026-04-30. Same rule lives in the other public Termin repos
+and in the workspace-root CLAUDE.md so no session is more than one
+auto-loaded file away from it.
+
 ## What this is
 
 The Adobe Spectrum 2 presentation provider for Termin. Hybrid Python + Node project. The Python side registers against `termin_runtime.providers.presentation_contract.PresentationProvider`; the Node side builds a single ~150KB-gzipped bundle that runs the B' (LiveView-shaped) shell. See [termin-compiler/docs/spectrum-provider-design.md](https://github.com/jamieleigh3d/termin-compiler/blob/main/docs/spectrum-provider-design.md) for the architectural decisions.
