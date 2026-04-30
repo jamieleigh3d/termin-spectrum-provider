@@ -17,9 +17,9 @@ supported but not required.
 
 from __future__ import annotations
 
-from termin_runtime.providers import Category
-from termin_runtime.providers.contracts import ContractRegistry
-from termin_runtime.providers.presentation_contract import (
+from termin_server.providers import Category
+from termin_server.providers.contracts import ContractRegistry
+from termin_server.providers.presentation_contract import (
     PRESENTATION_BASE_CONTRACTS,
     register_presentation_base_contracts,
 )

@@ -24,7 +24,7 @@ from typing import Any, Mapping, Optional
 
 # These types are defined in termin-compiler. Importing here ties this
 # package to the Protocol; runtime checks (isinstance) verify it.
-from termin_runtime.providers.presentation_contract import (
+from termin_server.providers.presentation_contract import (
     PRESENTATION_BASE_CONTRACTS,
     PresentationData,
     PrincipalContext,

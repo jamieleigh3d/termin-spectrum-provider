@@ -10,10 +10,10 @@ entry point declared in setup.py."""
 
 from __future__ import annotations
 
-from termin_runtime.providers import (
+from termin_server.providers import (
     Category, ContractRegistry, ProviderRegistry,
 )
-from termin_runtime.providers.presentation_contract import (
+from termin_server.providers.presentation_contract import (
     PRESENTATION_BASE_CONTRACTS,
 )
 from termin_spectrum import register_spectrum
@@ -44,7 +44,7 @@ def test_register_spectrum_factory_produces_provider():
     )
     instance = record.factory({})
     # The instance must satisfy the Protocol the runtime checks against.
-    from termin_runtime.providers.presentation_contract import (
+    from termin_server.providers.presentation_contract import (
         PresentationProvider,
     )
     assert isinstance(instance, PresentationProvider)
@@ -68,7 +68,7 @@ def test_register_spectrum_idempotent_with_pre_registered_contracts():
     """Tailwind-default may have registered the contracts already.
     register_spectrum must tolerate that and still register all ten
     provider records."""
-    from termin_runtime.providers.presentation_contract import (
+    from termin_server.providers.presentation_contract import (
         register_presentation_base_contracts,
     )
     contracts = ContractRegistry.default()
