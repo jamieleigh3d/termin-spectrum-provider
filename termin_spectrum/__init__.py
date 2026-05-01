@@ -30,7 +30,7 @@ from termin_spectrum.provider import SpectrumProvider
 from termin_spectrum.factory import spectrum_factory
 from termin_spectrum.registration import register_spectrum
 
-__version__ = "0.9.0"
+__version__ = "0.9.1"
 
 __all__ = [
     "SpectrumProvider",

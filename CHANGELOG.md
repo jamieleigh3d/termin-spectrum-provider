@@ -4,6 +4,50 @@ All notable changes to `termin-spectrum-provider` will be documented in this fil
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.9.1] — 2026-05-01
+
+Reactivity + CI-correctness patch on top of v0.9.0.
+
+### Added
+
+- **Live row-state subscription on `data-table`.** The contract
+  was render-once in v0.9.0 with a placeholder comment for
+  in-place updates. JL hit the gap on the warehouse demo —
+  clicking "Activate" on a draft product transitioned the state
+  server-side, but the lifecycle column AND action buttons stayed
+  stale until page refresh. v0.9.1 closes the placeholder:
+  `data-table.tsx` is now a stateful React component that
+  subscribes to `content.<source>` for created/updated/deleted
+  pushes, merges the payload into local row state, and
+  re-renders.
+- **Client-side `__visible_actions` recompute.** v0.9.0 stamped
+  this list once at bootstrap and never refreshed, so a
+  `draft → active` transition left the original `["Activate"]`
+  on the row. v0.9.1 recomputes per render using
+  `window.__termin.state.bootstrap.transitions[source][machine]`
+  + `identity.scopes` + the row's current state column. Mirrors
+  the server-side `_visible_actions_for_row` helper exactly.
+
+### Fixed
+
+- **CI Python workflow PowerShell line-continuation.** v0.9.0
+  used multi-line bash-style `\` line continuations in the pip
+  install step. The Windows runner's default shell is
+  PowerShell 7, whose continuation token is the backtick — the
+  workflow exited 1 with `Unexpected token '\' in expression or
+  statement` on every Windows matrix cell. v0.9.1 adds
+  `shell: bash` to both `Install dependencies` and `Run pytest`
+  steps; both runners now execute the same shell script.
+
+### Build
+
+- Bundle size: 925.4 KB unminified (was 924.2 KB; +1.2 KB for
+  the hooks + recompute logic). Comfortably under the 1 MB
+  envelope and the 250 KB gzipped budget.
+- TypeScript typecheck (`tsc --noEmit`): clean.
+- Python conformance: 16/16 passing.
+- JS unit tests (vitest): 10/10 passing.
+
 ## [0.9.0] — 2026-04-30
 
 Version aligned to the v0.9 Termin family release. Pre-this-release
