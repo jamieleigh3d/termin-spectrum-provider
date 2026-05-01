@@ -28,16 +28,20 @@ jobs:
         # termin-server sibling repo. The provider's tests_py/ imports
         # PresentationProvider from termin_core.providers, which travels
         # with termin-server's runtime dependency closure, so all three
-        # packages must be installed before pytest collection. PEP 508
-        # direct URLs pin to the v0.9 work branches until the family
-        # publishes to PyPI. setup.py install_requires keeps the same
-        # version constraints for the eventual PyPI install path.
+        # packages must be installed before pytest collection. Pinning
+        # to @main means CI tests this provider against the current
+        # platform — when the platform breaks compatibility, CI lights
+        # up here rather than passing silently against a frozen tag.
+        # PEP 508 direct URLs install from git until the family
+        # publishes to PyPI; once they do, this step simplifies to
+        # `pip install -e ".[test]"` and setup.py install_requires
+        # resolves the same dependencies.
         run: |
           pip install --upgrade pip
           pip install -e ".[test]" \
-            "termin-core @ git+https://github.com/jamieleigh3d/termin-core.git@feature/v0.9" \
-            "termin-server @ git+https://github.com/jamieleigh3d/termin-server.git@feature/v0.9" \
-            "termin-compiler @ git+https://github.com/jamieleigh3d/termin-compiler.git@feature/v0.9-presentation"
+            "termin-core @ git+https://github.com/jamieleigh3d/termin-core.git@main" \
+            "termin-server @ git+https://github.com/jamieleigh3d/termin-server.git@main" \
+            "termin-compiler @ git+https://github.com/jamieleigh3d/termin-compiler.git@main"
 
       - name: Run pytest
         run: pytest tests_py/ -v
