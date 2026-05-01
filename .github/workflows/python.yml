@@ -24,19 +24,20 @@ jobs:
           python-version: ${{ matrix.python-version }}
 
       - name: Install dependencies
-        # Until termin-compiler v0.9 is on PyPI, install both packages
-        # in one pip invocation. The PEP 508 direct URL pins
-        # termin-compiler to the v0.9 work branch (feature/v0.9-presentation
-        # — main is still 0.8.1, predating the PresentationProvider
-        # Protocol this provider registers against). The setup.py
-        # install_requires keeps `termin-compiler>=0.9.0` for the
-        # eventual PyPI install path. Doing both installs in one pip
-        # command also avoids pip re-resolving the version constraint
-        # against PyPI in a later step (which would fail since
-        # termin-compiler isn't published yet).
+        # v0.9 split the runtime out of termin-compiler into its own
+        # termin-server sibling repo. The provider's tests_py/ imports
+        # PresentationProvider from termin_core.providers, which travels
+        # with termin-server's runtime dependency closure, so all three
+        # packages must be installed before pytest collection. PEP 508
+        # direct URLs pin to the v0.9 work branches until the family
+        # publishes to PyPI. setup.py install_requires keeps the same
+        # version constraints for the eventual PyPI install path.
         run: |
           pip install --upgrade pip
-          pip install -e ".[test]" "termin-compiler @ git+https://github.com/jamieleigh3d/termin-compiler.git@feature/v0.9-presentation"
+          pip install -e ".[test]" \
+            "termin-core @ git+https://github.com/jamieleigh3d/termin-core.git@feature/v0.9" \
+            "termin-server @ git+https://github.com/jamieleigh3d/termin-server.git@feature/v0.9" \
+            "termin-compiler @ git+https://github.com/jamieleigh3d/termin-compiler.git@feature/v0.9-presentation"
 
       - name: Run pytest
         run: pytest tests_py/ -v

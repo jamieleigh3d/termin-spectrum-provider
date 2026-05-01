@@ -8,7 +8,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="termin-spectrum-provider",
-    version="0.1.0.dev0",
+    version="0.9.0",
     description="Adobe Spectrum 2 presentation provider for Termin",
     long_description=open("README.md", encoding="utf-8").read(),
     long_description_content_type="text/markdown",
@@ -30,9 +30,13 @@ setup(
     },
     python_requires=">=3.11",
     install_requires=[
-        # The provider Protocol, contract registry, and PresentationData
-        # types live in termin-compiler. Pin to the v0.9 line until
-        # both stabilize.
+        # v0.9 split the runtime out of termin-compiler. The provider
+        # Protocol, contract registry, and PresentationData types now
+        # live in termin-core; the provider tests also exercise the
+        # registration helper which needs termin-server. Pin all three
+        # to the v0.9 line until they stabilize together.
+        "termin-core>=0.9.0,<0.10",
+        "termin-server>=0.9.0,<0.10",
         "termin-compiler>=0.9.0",
     ],
     extras_require={

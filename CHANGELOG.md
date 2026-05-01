@@ -4,7 +4,28 @@ All notable changes to `termin-spectrum-provider` will be documented in this fil
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [0.9.0] — 2026-04-30
+
+Version aligned to the v0.9 Termin family release. Pre-this-release
+the package versioned independently on its own SemVer track
+(0.1.0.dev0); the bump to 0.9.0 makes the version story across
+`termin-core`, `termin-server`, `termin-compiler`, and
+`termin-spectrum-provider` legible at a glance — they all ship
+together as the v0.9 family. Subsequent provider releases will
+move on the family cadence.
+
+### Changed (2026-04-30 — release-day fixes)
+
+- **CI workflow installs the v0.9 sibling packages.** The Python
+  CI job's pip command now installs `termin-core` and `termin-server`
+  alongside `termin-compiler` from their respective v0.9 work
+  branches. Before this change, `tests_py/` collected with
+  `ModuleNotFoundError: No module named 'termin_server'` because
+  the slice 7.5a migration to canonical import paths had moved the
+  Protocol surface to `termin_core` and the registration helper's
+  exception types to `termin_server`, neither of which the workflow
+  was installing. Mirror change in `setup.py::install_requires`
+  so the eventual PyPI install path resolves the same dependencies.
 
 ### Added (2026-04-29 — Phase 5+6 closure work in compiler)
 - All ten `presentation-base` contracts now have real Spectrum-shaped renderers (chat is the last one — closes the v0.1.x contract surface):

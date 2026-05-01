@@ -1,6 +1,6 @@
 {
   "name": "termin-spectrum-provider",
-  "version": "0.1.0-dev.0",
+  "version": "0.9.0",
   "private": true,
   "description": "Adobe Spectrum 2 presentation provider for Termin (build artifacts only — Python package is the published surface)",
   "license": "Apache-2.0",
