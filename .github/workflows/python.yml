@@ -36,6 +36,14 @@ jobs:
         # publishes to PyPI; once they do, this step simplifies to
         # `pip install -e ".[test]"` and setup.py install_requires
         # resolves the same dependencies.
+        #
+        # `shell: bash` forces a portable shell across both
+        # ubuntu-latest and windows-latest runners — without it,
+        # PowerShell on the Windows runner rejects backslash line
+        # continuations (its continuation token is the backtick).
+        # First v0.9.0 ship of this workflow used the multi-line
+        # form with `\` and broke every Windows matrix cell.
+        shell: bash
         run: |
           pip install --upgrade pip
           pip install -e ".[test]" \
@@ -44,4 +52,8 @@ jobs:
             "termin-compiler @ git+https://github.com/jamieleigh3d/termin-compiler.git@main"
 
       - name: Run pytest
+        # `shell: bash` for cross-runner consistency; pytest itself
+        # doesn't need the shell, but pinning matches the install
+        # step above so the whole job is shell-portable.
+        shell: bash
         run: pytest tests_py/ -v
