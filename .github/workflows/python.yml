@@ -43,9 +43,16 @@ jobs:
         # continuations (its continuation token is the backtick).
         # First v0.9.0 ship of this workflow used the multi-line
         # form with `\` and broke every Windows matrix cell.
+        #
+        # Pip self-upgrade uses `python -m pip install --upgrade
+        # pip`, not bare `pip install --upgrade pip`. As of pip 26.1
+        # (2026-05-01), the Windows pip.exe shim refuses to replace
+        # itself while running and errors out telling the caller to
+        # use the `python -m` form instead — which works on every
+        # platform, so we use it unconditionally.
         shell: bash
         run: |
-          pip install --upgrade pip
+          python -m pip install --upgrade pip
           pip install -e ".[test]" \
             "termin-core @ git+https://github.com/jamieleigh3d/termin-core.git@main" \
             "termin-server @ git+https://github.com/jamieleigh3d/termin-server.git@main" \
