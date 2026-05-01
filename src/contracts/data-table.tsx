@@ -4,12 +4,19 @@
 // sourced from `bound_data[props.source]` and per-row action buttons
 // dispatched through Termin.action().
 //
-// Scope of this slice (v0.1.x):
+// Scope of this slice (v0.1.x + v0.9.1 reactivity):
 //   * Core columns + rows from props.columns + bound_data
 //   * Row-action buttons for kinds: transition, delete
 //   * Empty-state message when the source has no records
 //   * Redacted-sentinel handling — render "—" with the
 //     data-termin-redacted attribute so accessibility can pick it up
+//   * **v0.9.1 reactivity** — subscribe to `content.<source>` for
+//     created/updated/deleted pushes; merge into local state and
+//     re-render. Recompute __visible_actions client-side per push
+//     using bootstrap.transitions[source][machine] + identity.scopes,
+//     so action buttons reflect the row's NEW state without a page
+//     refresh. Closes the v0.1.0 placeholder
+//     ("Re-fetch and re-render on push events for v0.1.0…").
 //
 // Deferred to follow-on slices:
 //   * Inline-editable fields (props.inline_editable_fields) — needs
@@ -18,14 +25,18 @@
 //     each is its own primitive
 //   * Related child-table rendering (children[type=related]) —
 //     composes with this primitive but is its own thing
-//   * `visible_when` CEL evaluation — for now every row action is
-//     rendered unconditionally; the runtime rejects invalid actions
-//     server-side (403 / 409). Cleaner UX once we have a CEL-in-JS
-//     evaluator or pre-evaluated visibility fields in bound_data.
 //   * The `edit` action kind — opens an edit modal; deferred until
 //     the form contract lands
 
-import { ReactNode, ReactElement, createElement, Key } from "react";
+import {
+  ReactNode,
+  ReactElement,
+  createElement,
+  Key,
+  useState,
+  useEffect,
+  useMemo,
+} from "react";
 import {
   TableView,
   TableHeader,
@@ -39,6 +50,7 @@ import {
 import { registerLocal, ContractRendererArgs } from "../walk";
 import { isRedacted, lookupRecords } from "../glue/data";
 import { action } from "../glue/action";
+import { subscribe } from "../glue/subscribe";
 
 // IR shapes — narrow types, only what this renderer reads. Keeps
 // the dependency surface against the IR small.
@@ -74,9 +86,76 @@ export function renderDataTable(args: ContractRendererArgs): ReactElement {
     source: "",
     columns: [],
   };
-  const records = lookupRecords(data, props.source);
-  const rowActions = props.row_actions || [];
+  const initialRecords = lookupRecords(data, props.source);
+
+  // The renderer is invoked through walk.tsx as a plain function; the
+  // returned React element is a function component invocation, which
+  // gives us access to hooks. The stateful component below owns row
+  // state and subscribes to `content.<source>` pushes for live
+  // updates — closing the v0.1.0 "render-once" placeholder.
+  return createElement(DataTable, {
+    source: props.source,
+    columns: props.columns,
+    rowActions: props.row_actions || [],
+    initialRecords,
+  });
+}
+
+interface DataTableInnerProps {
+  source: string;
+  columns: ColumnSpec[];
+  rowActions: RowActionSpec[];
+  initialRecords: Record<string, unknown>[];
+}
+
+function DataTable(p: DataTableInnerProps): ReactElement {
+  const { source, columns, rowActions, initialRecords } = p;
   const hasActions = rowActions.length > 0;
+
+  // Local row state, seeded from bound_data and updated in-place on
+  // content.<source>.{created,updated,deleted} pushes. Identity-keyed
+  // by `row.id`.
+  const [records, setRecords] = useState<Record<string, unknown>[]>(initialRecords);
+
+  // Subscribe to row-mutation pushes. Re-fires on `source` changes
+  // (e.g., navigation between pages with different data-tables).
+  useEffect(() => {
+    if (!source) return undefined;
+    const channelPrefix = `content.${source}`;
+    const handler = (rawData: unknown, channel?: string) => {
+      if (typeof channel !== "string") return;
+      // Channel shape: content.<source>.<action>; action ∈
+      // {created, updated, deleted}.
+      const parts = channel.split(".");
+      const eventAction = parts[2];
+      if (!rawData || typeof rawData !== "object") return;
+      const payload = rawData as Record<string, unknown>;
+
+      if (eventAction === "created") {
+        setRecords((prev) => {
+          // Idempotent: if the id already exists, treat as update.
+          if (payload.id != null && prev.some((r) => r.id === payload.id)) {
+            return prev.map((r) => (r.id === payload.id ? { ...r, ...payload } : r));
+          }
+          return [...prev, payload];
+        });
+      } else if (eventAction === "updated") {
+        if (payload.id == null) return;
+        setRecords((prev) =>
+          prev.map((r) => (r.id === payload.id ? { ...r, ...payload } : r))
+        );
+      } else if (eventAction === "deleted") {
+        const id = (payload.record_id ?? payload.id) as
+          | string
+          | number
+          | undefined;
+        if (id == null) return;
+        setRecords((prev) => prev.filter((r) => r.id !== id));
+      }
+    };
+    const unsub = subscribe(channelPrefix, handler);
+    return unsub;
+  }, [source]);
 
   // The columns list exposed to TableView/TableHeader/Row. React Aria's
   // collection API needs each column entry to expose an `id` field so
@@ -88,31 +167,54 @@ export function renderDataTable(args: ContractRendererArgs): ReactElement {
   // stable ACTIONS_COLUMN_ID.
   const tableColumns: Array<
     ColumnSpec & { id: string; __actions?: boolean }
-  > = [
-    ...props.columns.map((c) => ({ ...c, id: c.field })),
-    ...(hasActions
-      ? [{
-          field: ACTIONS_COLUMN_ID,
-          id: ACTIONS_COLUMN_ID,
-          label: "Actions",
-          __actions: true as const,
-        }]
-      : []),
-  ];
+  > = useMemo(
+    () => [
+      ...columns.map((c) => ({ ...c, id: c.field })),
+      ...(hasActions
+        ? [{
+            field: ACTIONS_COLUMN_ID,
+            id: ACTIONS_COLUMN_ID,
+            label: "Actions",
+            __actions: true as const,
+          }]
+        : []),
+    ],
+    [columns, hasActions]
+  );
+
+  // v0.9.1: client-side __visible_actions recompute. The runtime
+  // pre-evaluates visibility at bootstrap (in
+  // termin_server.bootstrap._attach_visible_actions) and stamps each
+  // row in the initial bound_data; that value is correct only for
+  // the initial state. Once a row mutates via WebSocket push the
+  // server-side stamp is stale: a "draft → active" transition still
+  // leaves __visible_actions = ["Activate"]. We recompute per render
+  // using the same logic the bootstrap helper uses, but driven from
+  // the row's CURRENT (post-mutation) state. The recomputation is
+  // memoized over (records, source, rowActions) so it skips when
+  // nothing changed.
+  const recordsWithVisibility = useMemo(
+    () =>
+      records.map((row) => ({
+        ...row,
+        __visible_actions: computeVisibleActions(row, source, rowActions),
+      })),
+    [records, source, rowActions]
+  );
 
   // Empty-state branch — TableView's renderEmptyState slot would also
   // work, but a plain message reads more cleanly when no rows ever
   // arrive (rather than "no results matching filter" semantics).
-  if (records.length === 0) {
+  if (recordsWithVisibility.length === 0) {
     return createElement(
       "div",
       {
         "data-termin-contract": "presentation-base.data-table",
-        "data-termin-source": props.source,
+        "data-termin-source": source,
         "data-termin-empty": "true",
         style: { padding: "24px", color: "var(--spectrum-gray-700, #666)" },
       },
-      `No ${props.source} yet.`
+      `No ${source} yet.`
     );
   }
 
@@ -120,12 +222,12 @@ export function renderDataTable(args: ContractRendererArgs): ReactElement {
     "div",
     {
       "data-termin-contract": "presentation-base.data-table",
-      "data-termin-source": props.source,
+      "data-termin-source": source,
     },
     createElement(
       TableView,
       {
-        "aria-label": `Table of ${props.source}`,
+        "aria-label": `Table of ${source}`,
         // Default density (no compact override). Compact crams cell
         // text into 32px-tall rows where multi-word values (e.g.
         // "raw material", "finished good") truncate to "raw m...".
@@ -139,12 +241,6 @@ export function renderDataTable(args: ContractRendererArgs): ReactElement {
             {
               id: col.field,
               isRowHeader: col.field === "id",
-              // Actions column needs room for an ActionButtonGroup
-              // with up to 4 buttons; the rest get a sensible
-              // default that beats Spectrum's auto-width. Apps that
-              // want different sizing can override via deploy
-              // config (a future slice — for v0.1.x widths are
-              // baked in).
               minWidth: col.__actions ? 320 : 120,
             } as any,
             col.label
@@ -152,7 +248,7 @@ export function renderDataTable(args: ContractRendererArgs): ReactElement {
       ),
       createElement(
         TableBody,
-        { items: records as Iterable<Record<string, unknown>> } as any,
+        { items: recordsWithVisibility as Iterable<Record<string, unknown>> } as any,
         ((row: Record<string, unknown>) =>
           createElement(
             Row,
@@ -165,13 +261,76 @@ export function renderDataTable(args: ContractRendererArgs): ReactElement {
                 Cell,
                 {} as any,
                 col.__actions
-                  ? renderRowActions(props.source, row, rowActions)
+                  ? renderRowActions(source, row, rowActions)
                   : renderCellValue(row[col.field])
               )) as unknown as ReactNode
           )) as unknown as ReactNode
       )
     )
   );
+}
+
+// ── __visible_actions recompute (client-side mirror of
+// termin_server.bootstrap._visible_actions_for_row) ──
+
+interface TerminGlobalState {
+  bootstrap?: {
+    transitions?: Record<
+      string,
+      Record<string, Record<string, string>>
+    >;
+  };
+  identity?: { scopes?: string[] };
+}
+
+function _terminState(): TerminGlobalState | null {
+  const w = window as unknown as { __termin?: { state?: TerminGlobalState } };
+  return w.__termin?.state ?? null;
+}
+
+function computeVisibleActions(
+  row: Record<string, unknown>,
+  source: string,
+  actions: RowActionSpec[]
+): string[] {
+  const tstate = _terminState();
+  const transitionsForSource =
+    tstate?.bootstrap?.transitions?.[source] || {};
+  const userScopes = new Set<string>(tstate?.identity?.scopes || []);
+
+  const visible: string[] = [];
+  for (const a of actions) {
+    const props = a.props;
+    const label = props.label || "";
+    const kind = props.action || "transition";
+
+    if (kind === "delete" || kind === "edit") {
+      const required = props.required_scope || "";
+      if (!required || userScopes.has(required)) visible.push(label);
+      continue;
+    }
+
+    if (kind === "transition") {
+      const machine = props.machine_name || "";
+      const target = props.target_state || "";
+      // Read the row's CURRENT state from the column whose name is
+      // the machine name itself (v0.9 single-column-per-machine).
+      const currentState = String(row[machine] ?? "");
+      const machineMap = transitionsForSource[machine] || {};
+      const transKey = `${currentState}|${target}`;
+      const requiredScope = machineMap[transKey];
+      if (requiredScope === undefined) continue; // not a declared transition
+      if (requiredScope === "" || userScopes.has(requiredScope)) {
+        visible.push(label);
+      }
+      continue;
+    }
+
+    // Unknown action kind — show by default. Mirrors the
+    // termin_server.bootstrap fallback; runtime gates dispatch.
+    visible.push(label);
+  }
+  return visible;
 }
 
 function rowKey(row: Record<string, unknown>): Key {
