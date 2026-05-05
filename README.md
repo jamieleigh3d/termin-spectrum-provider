@@ -6,7 +6,7 @@ Termin is a secure-by-construction application compiler. The runtime separates t
 
 It runs in **B' mode** (server-authoritative + JS-as-renderer, LiveView-shaped) — the runtime computes component-tree IR and bound data; this provider's bundle renders. Page navigation feels SPA-fast without giving up the runtime's audit-and-confidentiality guarantees.
 
-> **Status:** v0.9.0 — released 2026-04-30. All ten `presentation-base` contracts (`page`, `text`, `data-table`, `form`, `chat`, `metric`, `nav-bar`, `toast`, `banner`, `markdown`) ship with real Spectrum-shaped renderers; the JS bundle is 246 KB gzipped, under the 250 KB cap. Version aligned to the v0.9 Termin family release; subsequent provider releases move on the family cadence.
+> **Status:** v0.9.2 — released 2026-05-05 as a repo-set alignment release with the rest of the Termin v0.9.2 family (no Spectrum surface change in v0.9.2 — the conversation-field chat hydrator landed against the Tailwind reference path only; the Spectrum chat-component implementation is on the v0.10 backlog). All ten `presentation-base` contracts (`page`, `text`, `data-table`, `form`, `chat`, `metric`, `nav-bar`, `toast`, `banner`, `markdown`) ship with Spectrum-shaped renderers from v0.9.0; v0.9.1 added live row-state subscription on `data-table`; the JS bundle is 246 KB gzipped, under the 250 KB cap.
 
 ## Install
 

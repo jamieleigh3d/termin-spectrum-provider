@@ -8,7 +8,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="termin-spectrum-provider",
-    version="0.9.1",
+    version="0.9.2",
     description="Adobe Spectrum 2 presentation provider for Termin",
     long_description=open("README.md", encoding="utf-8").read(),
     long_description_content_type="text/markdown",

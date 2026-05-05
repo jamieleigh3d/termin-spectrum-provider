@@ -4,6 +4,44 @@ All notable changes to `termin-spectrum-provider` will be documented in this fil
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.9.2] — 2026-05-05
+
+Repo-set alignment release. The Termin family ships v0.9.2 today
+(conversation-field type + materialize-to-Anthropic + chat hydrator
+in the Tailwind reference); the Spectrum provider has no surface
+work in this release because the v0.9.2 chat presentation binding
+landed against the Tailwind reference path only. The Spectrum
+chat-component implementation is on the v0.10 backlog (browser
+conformance for Spectrum + per-component override-mode dispatch
+for Tailwind page + Spectrum data-table coexistence).
+
+Bumping in lockstep with the rest of the Termin v0.9 family so
+deploy configs that pin compatible ranges
+(`termin-spectrum-provider==0.9.x`) get the same version arc as
+the runtime they bind into. The bundle is byte-identical to
+v0.9.1 — no JS rebuild required for consumers who already pulled
+the v0.9.1 wheel.
+
+### Changed
+
+- Version bumped to `0.9.2` (Python package + npm `package.json`
+  if separately versioned; check the bundle build pipeline).
+
+### Notes
+
+The v0.9.1 reactivity work (data-table state subscriptions,
+client-side `__visible_actions` recompute) carries forward
+unchanged. The v0.9.0 → v0.9.1 → v0.9.2 deployment story for
+Spectrum is "data-table is reactive; chat surface ships against
+Tailwind only until v0.10 lands the per-component dispatch
+that lets a Spectrum app coexist with the Tailwind chat
+component on the same page."
+
+### Suite
+
+16 Python tests + 10 JS unit tests passing (unchanged from
+v0.9.1).
+
 ## [0.9.1] — 2026-05-01
 
 Reactivity + CI-correctness patch on top of v0.9.0.
