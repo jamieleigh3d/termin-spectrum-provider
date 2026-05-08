@@ -16,7 +16,7 @@ from __future__ import annotations
 
 import pytest
 
-from termin_server.providers.presentation_contract import (
+from termin_core.providers.presentation_contract import (
     PRESENTATION_BASE_CONTRACTS,
     PresentationProvider,
 )

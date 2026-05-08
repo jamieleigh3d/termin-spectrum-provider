@@ -4,6 +4,29 @@ All notable changes to `termin-spectrum-provider` will be documented in this fil
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.9.3] — 2026-05-07
+
+Repo-set alignment release. The Termin family ships v0.9.3 today
+(runtime extraction — alt-runtime-enabling Python API moves from
+`termin-server` into `termin-core`); termin-spectrum-provider
+participates in the version bump and updates its imports to the
+new shim-free layout. No surface change; no behavior change.
+
+### Changed
+
+- Imports updated from `termin_server.providers.*` →
+  `termin_core.providers.*` (4 files: `provider.py`,
+  `registration.py`, `tests_py/test_provider_protocol.py`,
+  `tests_py/test_registration.py`). The slice 7.1 shim layer in
+  `termin-server` was retired in v0.9.3 per the no-shims policy;
+  this provider follows.
+- `setup.py` version bumped 0.9.2 → 0.9.3 (alignment only).
+
+### Test counts
+
+- 16 Python tests passing (unchanged from v0.9.2).
+- JS tests unchanged.
+
 ## [0.9.2] — 2026-05-05
 
 Repo-set alignment release. The Termin family ships v0.9.2 today
