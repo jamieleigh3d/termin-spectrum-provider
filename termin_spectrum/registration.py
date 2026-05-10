@@ -25,6 +25,7 @@ from termin_core.providers.presentation_contract import (
 )
 
 from termin_spectrum.factory import spectrum_factory
+from termin_spectrum import __version__
 
 
 PRODUCT_NAME = "spectrum"
@@ -55,7 +56,13 @@ def register_spectrum(
             product_name=PRODUCT_NAME,
             factory=spectrum_factory,
             conformance="passing",
-            version="0.1.0",
+            # Per docs/version-policy.md §2.3 in termin-compiler:
+            # provider-record version tracks the package version of
+            # the providing package. Pre-fix this was hardcoded
+            # "0.1.0" (scaffold leftover from before the v0.9
+            # family alignment); reading from __version__ keeps it
+            # aligned with the package on every release.
+            version=__version__,
             contract_registry=contract_registry,
         )
 

@@ -26,11 +26,19 @@ See the project README for deploy-config wiring and the spectrum-provider
 design doc in termin-compiler/docs/ for the architectural decisions.
 """
 
-from termin_spectrum.provider import SpectrumProvider
-from termin_spectrum.factory import spectrum_factory
-from termin_spectrum.registration import register_spectrum
+# Canonical package version per docs/version-policy.md §2.1 in
+# termin-compiler. release.py bumps THIS value; everywhere else that
+# needs the package version (registration.py's provider record, the
+# bundle build pipeline) imports it from here.
+#
+# Declared BEFORE the submodule imports below because
+# registration.py does `from termin_spectrum import __version__`
+# at module-load time; the assignment must happen first.
+__version__ = "0.9.3"
 
-__version__ = "0.9.2"
+from termin_spectrum.provider import SpectrumProvider  # noqa: E402
+from termin_spectrum.factory import spectrum_factory  # noqa: E402
+from termin_spectrum.registration import register_spectrum  # noqa: E402
 
 __all__ = [
     "SpectrumProvider",

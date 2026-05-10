@@ -4,6 +4,33 @@ All notable changes to `termin-spectrum-provider` will be documented in this fil
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Fixed
+
+- **`__version__` and `package.json` brought into family
+  alignment.** v0.9.3 shipped with `termin_spectrum/__init__.py`
+  declaring `__version__ = "0.9.2"` and `package.json`
+  declaring `"version": "0.9.2"` while the rest of the v0.9
+  family was at `0.9.3`. Both bumped to `0.9.3` to match;
+  `release.py` in `termin-compiler` now bumps both as part of
+  `--compiler-version` per
+  `termin-compiler/docs/version-policy.md` §4.
+- **`registration.py` provider-record version** was hardcoded
+  to `"0.1.0"` (scaffold leftover from before the v0.9 family
+  alignment) — every Spectrum-renderable contract registered
+  with a stale, wrong version. Converted to
+  `from termin_spectrum import __version__` per the policy
+  doc §2.3 so the value tracks the package on every release.
+
+### Compatibility
+
+- Wire-shape change: the Spectrum provider's `ProviderRecord`
+  now reports `version="0.9.3"` instead of `"0.1.0"`. Consumers
+  pinned to `"0.1.0"` need to update; the `"0.1.0"` value was
+  drift, not a contract.
+- No JS bundle change — bundle stays byte-identical to v0.9.3.
+
 ## [0.9.3] — 2026-05-07
 
 Repo-set alignment release. The Termin family ships v0.9.3 today
